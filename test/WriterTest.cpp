@@ -17,8 +17,7 @@ using std::shared_ptr;
 
 // We should make sure these do not exist before the tests starts,
 // this will prevent any chances of finding the results of an older test.
-const std::vector<std::string> generated_files = {"test_write.mae",
-                                                  "test_write.maegz"};
+const std::vector<std::string> generated_files = {"test_write.mae"};
 
 const boost::filesystem::path test_samples_path(TEST_SAMPLES_PATH);
 const std::string uncompressed_sample =
@@ -65,7 +64,7 @@ BOOST_AUTO_TEST_CASE(Writer0)
 BOOST_AUTO_TEST_CASE(Writer1)
 {
     Reader r(uncompressed_sample);
-    auto w = std::make_shared<Writer>("test_write.maegz");
+    auto w = std::make_shared<Writer>("test_write.mae");
     std::vector<std::shared_ptr<Block>> input;
 
     std::shared_ptr<Block> b;
@@ -75,7 +74,7 @@ BOOST_AUTO_TEST_CASE(Writer1)
     }
     w.reset(); // Explicitly reset to flush file IO in writer
 
-    Reader output_r("test_write.maegz");
+    Reader output_r("test_write.mae");
     int input_num = 0;
     while ((b = output_r.next(CT_BLOCK)) != nullptr) {
         BOOST_CHECK(*b == *(input[input_num++]));

@@ -1,6 +1,6 @@
 include_directories(..)
 
-find_package(Boost COMPONENTS filesystem iostreams unit_test_framework REQUIRED)
+find_package(Boost COMPONENTS filesystem unit_test_framework REQUIRED)
 
 add_executable(unittest MainTestSuite.cpp BufferTest.cpp MaeBlockTest.cpp MaeParserTest.cpp
                ReaderTest.cpp WriterTest.cpp UsageDemo.cpp)

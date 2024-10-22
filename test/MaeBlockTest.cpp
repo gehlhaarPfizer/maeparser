@@ -88,8 +88,8 @@ BOOST_AUTO_TEST_CASE(maeIndexedRealProperty)
     }
     {
         auto dv = std::make_shared<std::vector<double>>();
-        boost::dynamic_bitset<>* bs = new boost::dynamic_bitset<>(3);
-        bs->set(1);
+        std::vector<bool>* bs = new std::vector<bool>(3, false);
+        (*bs)[1] = true;
 
         dv->push_back(1.0);
         dv->push_back(0.0);
@@ -104,8 +104,8 @@ BOOST_AUTO_TEST_CASE(maeIndexedRealProperty)
     }
     {
         std::vector<double> dv;
-        boost::dynamic_bitset<>* bs = new boost::dynamic_bitset<>(3);
-        bs->set(1);
+        std::vector<bool>* bs = new std::vector<bool>(3, false);
+        (*bs)[1] = true;
 
         dv.push_back(1.0);
         dv.push_back(0.0);
@@ -126,9 +126,8 @@ BOOST_AUTO_TEST_CASE(maeIndexedBlock)
     double tolerance = std::numeric_limits<double>::epsilon();
     {
         std::vector<double> dv;
-        boost::dynamic_bitset<>* bs = new boost::dynamic_bitset<>(3);
-        bs->set(1);
-
+        std::vector<bool>* bs = new std::vector<bool>(3, false);
+        (*bs)[1] = true;
         dv.push_back(1.0);
         dv.push_back(0.0);
         dv.push_back(3.0);
@@ -161,8 +160,8 @@ BOOST_AUTO_TEST_CASE(maeIndexedBlockBool)
     using namespace mae;
     {
         std::vector<BoolProperty> dv;
-        boost::dynamic_bitset<>* bs = new boost::dynamic_bitset<>(3);
-        bs->set(1);
+        std::vector<bool>* bs = new std::vector<bool>(3, false);
+        (*bs)[1] = true;
 
         dv.push_back(true);
         dv.push_back(false);
@@ -190,8 +189,8 @@ BOOST_AUTO_TEST_CASE(maeIndexedBlockString)
     using namespace mae;
     {
         std::vector<std::string> dv;
-        boost::dynamic_bitset<>* bs = new boost::dynamic_bitset<>(3);
-        bs->set(1);
+        std::vector<bool>* bs = new std::vector<bool>(3, false);
+        (*bs)[1] = true;
 
         dv.push_back("Hi with space");
         dv.push_back("ignore me");
@@ -221,16 +220,16 @@ std::shared_ptr<mae::IndexedBlock> getExampleIndexedBlock()
 
     // Set up a bool property
     std::vector<BoolProperty> dv = {true, false, true};
-    boost::dynamic_bitset<>* bs = new boost::dynamic_bitset<>(3);
-    bs->set(1);
+    std::vector<bool>* bs = new std::vector<bool>(3, false);
+    (*bs)[1] = true;
 
     auto ibps = std::make_shared<IndexedBoolProperty>(dv, bs);
     ib->setBoolProperty("b_m_bool", ibps);
 
     // Set up a real property
     std::vector<double> rv = {0.1, 42};
-    boost::dynamic_bitset<>* rbs = new boost::dynamic_bitset<>(3);
-    rbs->set(2);
+    std::vector<bool>* rbs = new std::vector<bool>(3, false);
+    (*rbs)[2] = true;
 
     auto irps = std::make_shared<IndexedRealProperty>(rv, rbs);
     ib->setRealProperty("r_m_reals", irps);

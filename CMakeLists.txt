@@ -10,7 +10,6 @@ option(MAEPARSER_BUILD_SHARED_LIBS "Build maeparser as a shared library (turn of
 if(MSVC)
     # C4251 disables warnings for export STL containers as arguments (returning a vector of things)
     add_compile_options(/wd4251 /wd4275 /wd4996 /D_SCL_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_WARNINGS)
-    add_definitions(-DBOOST_ALL_NO_LIB)
 endif(MSVC)
 
 if(MAEPARSER_RIGOROUS_BUILD)
@@ -26,32 +25,14 @@ file(GLOB mae_sources "*.cpp")
 if(MAEPARSER_BUILD_SHARED_LIBS)
     add_library(maeparser SHARED ${mae_sources})
     target_compile_definitions(maeparser PRIVATE "IN_MAEPARSER")
-    target_compile_definitions(maeparser PRIVATE "BOOST_ALL_DYN_LINK")
     set_property(TARGET maeparser PROPERTY CXX_VISIBILITY_PRESET "hidden")
 else(MAEPARSER_BUILD_SHARED_LIBS)
-    set(Boost_USE_STATIC_LIBS ON)
     if(NOT MSVC)
         set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
     endif()
     add_library(maeparser STATIC ${mae_sources})
     target_compile_definitions(maeparser PRIVATE "STATIC_MAEPARSER")
 endif(MAEPARSER_BUILD_SHARED_LIBS)
-
-find_package(Boost COMPONENTS iostreams REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-set(boost_libs ${Boost_LIBRARIES})
-
-find_package(Boost COMPONENTS zlib QUIET)
-if(Boost_ZLIB_FOUND)
-    set(boost_libs ${boost_libs} ${Boost_LIBRARIES})
-    message(STATUS "Using Boost zlib module for iostreams dependency.")
-else(Boost_ZLIB_FOUND)
-    find_package(ZLIB REQUIRED)
-    set(boost_libs ${boost_libs} ${ZLIB_LIBRARIES})
-    message(STATUS "Using zlib library for iostreams dependency.")
-endif(Boost_ZLIB_FOUND)
-
-target_link_libraries(maeparser ${boost_libs})
 
 SET_TARGET_PROPERTIES (maeparser
     PROPERTIES

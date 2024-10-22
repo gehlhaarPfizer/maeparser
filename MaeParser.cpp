@@ -1,15 +1,10 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include <boost/spirit/include/qi_numeric.hpp>
-#include <boost/spirit/include/qi_parse_attr.hpp>
-
 #include "MaeBlock.hpp"
 #include "MaeParser.hpp"
 
 #define WHITESPACE ' ' : case '\n' : case '\r' : case '\t'
-
-namespace qi = boost::spirit::qi;
 
 namespace schrodinger
 {
@@ -178,12 +173,10 @@ done:
         throw read_exception(buffer, "Missing real.");
     }
 
-    double value = 0;
-    if (!qi::parse(save, buffer.current, qi::double_, value) ||
-        save != buffer.current) {
-        // On error, save will have advanced to the point of the problem.
-        // May differ on versions of boost
-        throw read_exception(buffer.line_number, buffer.getColumn(save),
+    char *tmp_end;
+    double value = strtod(save, &tmp_end);
+    if (tmp_end != buffer.current) {
+        throw read_exception(buffer.line_number, buffer.getColumn(tmp_end),
                              "Bad real number.");
     }
     return value;
@@ -661,7 +654,7 @@ IndexedBlock* IndexedBlockBuffer::getIndexedBlock()
     size_t prop_count = m_property_names.size();
     size_t col_count = prop_count + 1;
     size_t value_count = col_count * m_rows;
-    boost::dynamic_bitset<>* is_null = nullptr;
+    std::vector<bool>* is_null = nullptr;
     for (int prop_indx = 1; iter != m_property_names.end();
          ++iter, ++prop_indx) {
         char type = (*iter)[0];
@@ -676,9 +669,9 @@ IndexedBlock* IndexedBlockBuffer::getIndexedBlock()
                 getData(ix, &data, &len);
                 if (data[0] == '<' && data[1] == '>') {
                     if (is_null == nullptr) {
-                        is_null = new boost::dynamic_bitset<>(m_rows);
+  		        is_null = new std::vector<bool>(m_rows, false);
                     }
-                    is_null->set(bvalues.size());
+                    (*is_null)[bvalues.size()] = true;
                     bvalues.push_back(false);
                 } else if (data[0] == '1') {
                     bvalues.push_back(true);
@@ -699,9 +692,9 @@ IndexedBlock* IndexedBlockBuffer::getIndexedBlock()
                 getData(ix, &data, &len);
                 if (data[0] == '<' && data[1] == '>') {
                     if (is_null == nullptr) {
-                        is_null = new boost::dynamic_bitset<>(m_rows);
+		        is_null = new std::vector<bool>(m_rows, false);
                     }
-                    is_null->set(ivalues.size());
+                    (*is_null)[ivalues.size()] = true;
                     ivalues.push_back(0);
                 } else {
                     long int value = simple_strtol(data, data + len);
@@ -719,15 +712,15 @@ IndexedBlock* IndexedBlockBuffer::getIndexedBlock()
                 getData(ix, &data, &len);
                 if (data[0] == '<' && data[1] == '>') {
                     if (is_null == nullptr) {
-                        is_null = new boost::dynamic_bitset<>(m_rows);
+		        is_null = new std::vector<bool>(m_rows, false);
                     }
-                    is_null->set(dvalues.size());
+                    (*is_null)[dvalues.size()] = true;
                     dvalues.push_back(0);
                 } else {
-                    double value = 0;
                     const char* end = data + len;
-                    if (!qi::parse(data, end, qi::double_, value) ||
-                        data != end) {
+		    char *tmp_end;
+		    double value = strtod(data, &tmp_end);
+		    if (tmp_end != end) {
                         throw std::invalid_argument("Bad floating point "
                                                     "representation.");
                     }
@@ -745,9 +738,9 @@ IndexedBlock* IndexedBlockBuffer::getIndexedBlock()
                 getData(ix, &data, &len);
                 if (data[0] == '<' && data[1] == '>') {
                     if (is_null == nullptr) {
-                        is_null = new boost::dynamic_bitset<>(m_rows);
+		        is_null = new std::vector<bool>(m_rows, false);
                     }
-                    is_null->set(svalues.size());
+                    (*is_null)[svalues.size()] = true;
                     svalues.emplace_back();
                 } else {
                     if (data[0] != '"') { // Check for quote wrapping

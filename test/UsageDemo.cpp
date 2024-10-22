@@ -54,8 +54,8 @@ class Structure
 };
 
 const boost::filesystem::path test_samples_path(TEST_SAMPLES_PATH);
-const std::string compressed_sample =
-    (test_samples_path / "test2.maegz").string();
+const std::string uncompressed_sample =
+    (test_samples_path / "test2.mae").string();
 
 BOOST_AUTO_TEST_SUITE(DemoSuite)
 
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_SUITE(DemoSuite)
 // exist in every f_m_ct block.
 BOOST_AUTO_TEST_CASE(maeBlock)
 {
-    schrodinger::mae::Reader r(compressed_sample);
+    schrodinger::mae::Reader r(uncompressed_sample);
 
     std::vector<std::shared_ptr<Structure>> structures;
     std::shared_ptr<Block> b;

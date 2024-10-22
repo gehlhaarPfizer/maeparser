@@ -1,12 +1,13 @@
 #pragma once
 
-#include <boost/dynamic_bitset.hpp>
 #include <cassert>
 #include <cstring>
 #include <map>
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <vector>
+#include <memory>
 
 #include "MaeParserConfig.hpp"
 
@@ -271,7 +272,7 @@ template <typename T> class IndexedProperty
 {
   private:
     std::vector<T> m_data;
-    boost::dynamic_bitset<>* m_is_null;
+    std::vector<bool>* m_is_null;
 
   public:
     // Prevent copying.
@@ -284,10 +285,10 @@ template <typename T> class IndexedProperty
      * Construct an IndexedProperty from a reference to a vector of data.
      * This swaps out the data of the input vector.
      *
-     * The optional boost::dynamic_bitset is owned by the created object.
+     * The optional vecetor<bool> is owned by the created object.
      */
     explicit IndexedProperty(std::vector<T>& data,
-                                boost::dynamic_bitset<>* is_null = nullptr)
+                             std::vector<bool>* is_null = nullptr)
         : m_data(), m_is_null(is_null)
     {
         m_data.swap(data);
@@ -306,31 +307,36 @@ template <typename T> class IndexedProperty
 
     bool hasUndefinedValues() const
     {
-        return (m_is_null != NULL && m_is_null->any());
+        if (m_is_null == nullptr)
+            return false;
+        for (bool val : *m_is_null)
+            if (val)
+                return true;
+        return false;
     }
+
 
     bool isDefined(size_type index) const
     {
         if (m_is_null == nullptr) {
-            // Use of assert matches out-of-bounds behavior for dynamic_bitset.
             assert(index < m_data.size());
             return true;
         } else {
-            return !m_is_null->test(index);
+            return !m_is_null->at(index);
         }
     }
 
     void undefine(size_type index)
     {
         if (m_is_null == NULL) {
-            m_is_null = new boost::dynamic_bitset<>(m_data.size());
+          m_is_null = new std::vector<bool>(m_data.size(), false);
         }
-        m_is_null->set(index);
+        (*m_is_null)[index] = true;
     }
 
     inline T& operator[](size_type index)
     {
-        if (m_is_null && m_is_null->test(index)) {
+        if (m_is_null && m_is_null->at(index)) {
             throw std::runtime_error("Indexed property value undefined.");
         }
         return m_data[index];
@@ -338,7 +344,7 @@ template <typename T> class IndexedProperty
 
     inline const T& operator[](size_type index) const
     {
-        if (m_is_null && m_is_null->test(index)) {
+        if (m_is_null && m_is_null->at(index)) {
             throw std::runtime_error("Indexed property value undefined.");
         }
         return m_data[index];
@@ -350,7 +356,7 @@ template <typename T> class IndexedProperty
 
     inline const T& at(size_type index, const T& default_) const
     {
-        if (m_is_null && m_is_null->test(index)) {
+        if (m_is_null && m_is_null->at(index)) {
             return default_;
         }
         return m_data[index];
@@ -359,13 +365,13 @@ template <typename T> class IndexedProperty
     void set(size_type index, const T& value)
     {
         m_data[index] = value;
-        if (m_is_null != NULL && m_is_null->test(index)) {
-            m_is_null->reset(index);
+        if (m_is_null != NULL && m_is_null->at(index)) {
+            (*m_is_null)[index] = false;
         }
     }
 
     const std::vector<T>& data() const { return m_data; }
-    const boost::dynamic_bitset<>* nullIndices() const { return m_is_null; }
+    const std::vector<bool>* nullIndices() const { return m_is_null; }
 };
 
 using IndexedRealProperty = IndexedProperty<double>;
